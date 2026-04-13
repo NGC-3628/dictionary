@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WordQuest Dictionary</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #FF6B6B;
+    --secondary: #4ECDC4;
+    --accent: #FFE66D;
+    --purple: #A855F7;
+    --green: #22C55E;
+    --bg: #FFF9F0;
+    --card: #FFFFFF;
+    --text: #2D2D2D;
+    --muted: #6B7280;
+    --border: #E5E7EB;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --radius: 20px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(255,107,107,0.07) 0%, transparent 50%),
+      radial-gradient(circle at 90% 80%, rgba(78,205,196,0.07) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(168,85,247,0.04) 0%, transparent 60%);
+    min-height: 100vh;
+    color: var(--text);
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background: var(--card);
+    border-bottom: 3px solid var(--accent);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--primary);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+  }
+
+  .home-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--primary);
+    color: white;
+    border: none; border-radius: 50px;
+    padding: 8px 20px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+    text-decoration: none;
+  }
+
+  .home-btn:hover { background: #e55a5a; transform: scale(1.04); }
+
+  .translation-counter {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--accent);
+    color: #92400E;
+    border-radius: 50px;
+    padding: 6px 16px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .counter-dots {
+    display: flex; gap: 5px;
+  }
+
+  .dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #92400E;
+    transition: background 0.3s;
+  }
+
+  .dot.used { background: rgba(146,64,14,0.25); }
+
+  /* ─── PAGES ─── */
+  .page { display: none; min-height: calc(100vh - 80px); }
+  .page.active { display: block; }
+
+  /* ─── HOME PAGE ─── */
+  #home-page {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+
+  #home-page.active { display: flex; }
+
+  .hero-emoji {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: bounce 2s ease-in-out infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .hero-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.8rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.1;
+  }
+
+  .hero-sub {
+    color: var(--muted);
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+    max-width: 400px;
+  }
+
+  .search-container {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .search-box {
+    display: flex;
+    background: var(--card);
+    border-radius: 60px;
+    border: 3px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .search-box:focus-within {
+    border-color: var(--secondary);
+    box-shadow: 0 4px 24px rgba(78,205,196,0.2);
+  }
+
+  .search-input {
+    flex: 1;
+    border: none; outline: none;
+    padding: 1rem 1.4rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.1rem;
+    background: transparent;
+    color: var(--text);
+  }
+
+  .search-input::placeholder { color: #9CA3AF; }
+
+  .search-clear {
+    background: none; border: none;
+    padding: 0 12px;
+    cursor: pointer;
+    color: #9CA3AF;
+    font-size: 1.2rem;
+    display: none;
+    align-items: center;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 1.2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-definition {
+    background: var(--secondary);
+    color: #065F46;
+    border: none; border-radius: 50px;
+    padding: 12px 32px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 12px rgba(78,205,196,0.35);
+  }
+
+  .btn-definition:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78,205,196,0.4); }
+
+  .btn-translation {
+    background: var(--purple);
+    color: white;
+    border: none; border-radius: 50px;
+    padding: 12px 32px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 12px rgba(168,85,247,0.35);
+  }
+
+  .btn-translation:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(168,85,247,0.4); }
+
+  .btn-translation:disabled {
+    background: #D1D5DB;
+    color: #6B7280;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .translation-warning {
+    margin-top: 1rem;
+    color: var(--primary);
+    font-size: 0.88rem;
+    font-weight: 700;
+    display: none;
+  }
+
+  .translation-warning.show { display: block; }
+
+  .tips {
+    margin-top: 3rem;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 700px;
+  }
+
+  .tip-card {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    box-shadow: var(--shadow);
+    border: 2px solid var(--border);
+    flex: 1; min-width: 180px;
+  }
+
+  .tip-icon { font-size: 1.4rem; }
+
+  /* ─── RESULT PAGE ─── */
+  #result-page {
+    display: none;
+    padding: 2rem 1.5rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  #result-page.active { display: block; }
+
+  .result-word {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.4rem;
+    color: var(--text);
+    margin-bottom: 0.2rem;
+  }
+
+  .result-phonetic {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .play-audio {
+    background: var(--secondary);
+    border: none; border-radius: 50%;
+    width: 30px; height: 30px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+    transition: transform 0.15s;
+  }
+
+  .play-audio:hover { transform: scale(1.1); }
+
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    margin-top: 1.4rem;
+  }
+
+  .part-of-speech {
+    display: inline-block;
+    background: var(--accent);
+    color: #92400E;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    margin-top: 0.4rem;
+  }
+
+  .definition-card {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.8rem;
+    border-left: 4px solid var(--secondary);
+    box-shadow: var(--shadow);
+  }
+
+  .definition-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  /* Clickable words in definitions */
+  .clickable-word {
+    cursor: pointer;
+    border-bottom: 2px dotted var(--secondary);
+    border-radius: 3px;
+    transition: background 0.15s;
+    padding: 0 2px;
+  }
+
+  .clickable-word:hover {
+    background: rgba(78,205,196,0.15);
+    border-bottom-color: var(--primary);
+  }
+
+  .example-text {
+    margin-top: 0.5rem;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-left: 3px solid var(--accent);
+    padding-left: 10px;
+  }
+
+  .word-chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 0.4rem;
+  }
+
+  .chip {
+    border: none; border-radius: 50px;
+    padding: 5px 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .chip-syn {
+    background: rgba(78,205,196,0.15);
+    color: #065F46;
+  }
+
+  .chip-syn:hover { background: rgba(78,205,196,0.3); transform: scale(1.05); }
+
+  .chip-ant {
+    background: rgba(255,107,107,0.12);
+    color: #991B1B;
+  }
+
+  .chip-ant:hover { background: rgba(255,107,107,0.25); transform: scale(1.05); }
+
+  /* Translation result */
+  .translation-box {
+    background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(78,205,196,0.08));
+    border: 2px solid rgba(168,85,247,0.2);
+    border-radius: var(--radius);
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .translation-es {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--purple);
+    margin-bottom: 0.3rem;
+  }
+
+  /* ─── ERROR STATE ─── */
+  .error-state {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .error-emoji { font-size: 3rem; margin-bottom: 1rem; }
+  .error-title { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--primary); margin-bottom: 0.5rem; }
+  .error-sub { color: var(--muted); }
+
+  /* ─── LOADING ─── */
+  .loading-state {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .spinner {
+    width: 48px; height: 48px;
+    border: 5px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── BLOCKED MODAL ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal-box {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 2rem;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    animation: popIn 0.25s ease;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-emoji { font-size: 3rem; margin-bottom: 0.8rem; }
+  .modal-title { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--primary); margin-bottom: 0.5rem; }
+  .modal-text { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.4rem; }
+
+  .modal-close {
+    background: var(--primary);
+    color: white;
+    border: none; border-radius: 50px;
+    padding: 10px 28px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .modal-close:hover { background: #e55a5a; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 480px) {
+    .hero-title { font-size: 2rem; }
+    header { padding: 0.8rem 1rem; }
+    .logo { font-size: 1.4rem; }
+    .action-buttons { flex-direction: column; align-items: center; }
+    .btn-definition, .btn-translation { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<header>
+  <a class="logo" href="#" onclick="goHome(); return false;">
+    <span class="logo-icon">W</span>
+    WordQuest
+  </a>
+
+  <div class="translation-counter" id="translation-counter">
+    <span>Translations left:</span>
+    <div class="counter-dots" id="counter-dots">
+      <div class="dot" id="dot-0"></div>
+      <div class="dot" id="dot-1"></div>
+      <div class="dot" id="dot-2"></div>
+    </div>
+    <span id="counter-num">3</span>
+  </div>
+
+  <button class="home-btn" onclick="goHome()">
+    🏠 Home
+  </button>
+</header>
+
+<!-- ─── HOME PAGE ─── -->
+<div id="home-page" class="page active">
+  <div class="hero-emoji">📚</div>
+  <h1 class="hero-title">WordQuest</h1>
+  <p class="hero-sub">Look up English words, discover meanings, and learn!</p>
+
+  <div class="search-container">
+    <div class="search-box">
+      <input
+        class="search-input"
+        id="search-input"
+        type="text"
+        placeholder="Type a word in English..."
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+      />
+      <button class="search-clear" id="clear-btn" onclick="clearSearch()">✕</button>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-definition" onclick="doSearch('definition')">
+        📖 Definition
+      </button>
+      <button class="btn-translation" id="btn-translation" onclick="doSearch('translation')">
+        🌎 Translation
+      </button>
+    </div>
+    <div class="translation-warning" id="translation-warning">
+      ⚠️ No more translations available for this session!
+    </div>
+  </div>
+
+  <div class="tips">
+    <div class="tip-card"><span class="tip-icon">🔵</span> Unlimited English definitions</div>
+    <div class="tip-card"><span class="tip-icon">🟡</span> 3 Spanish translations per session</div>
+    <div class="tip-card"><span class="tip-icon">🖱️</span> Click any word in results to look it up</div>
+  </div>
+</div>
+
+<!-- ─── RESULT PAGE ─── -->
+<div id="result-page" class="page">
+  <div id="result-content"></div>
+</div>
+
+<!-- ─── BLOCKED MODAL ─── -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-emoji">🔒</div>
+    <div class="modal-title">No more translations!</div>
+    <div class="modal-text">
+      You've used all 3 Spanish translations for this session.<br><br>
+      You can still look up as many <strong>English definitions</strong> as you want!
+    </div>
+    <button class="modal-close" onclick="closeModal()">Got it! 👍</button>
+  </div>
+</div>
+
+<script>
+  // ─── STATE ───
+  let translationsLeft = parseInt(sessionStorage.getItem('translationsLeft') ?? '3');
+  let audioUrl = null;
+  let currentMode = 'definition';
+
+  // ─── INIT ───
+  updateCounter();
+  if (translationsLeft === 0) blockTranslation();
+
+  // ─── SEARCH INPUT BEHAVIOR ───
+  const searchInput = document.getElementById('search-input');
+  const clearBtn = document.getElementById('clear-btn');
+
+  searchInput.addEventListener('input', () => {
+    clearBtn.style.display = searchInput.value ? 'flex' : 'none';
+  });
+
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch(currentMode);
+  });
+
+  function clearSearch() {
+    searchInput.value = '';
+    clearBtn.style.display = 'none';
+    searchInput.focus();
+  }
+
+  // ─── NAVIGATION ───
+  function goHome() {
+    showPage('home-page');
+    searchInput.focus();
+  }
+
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // ─── COUNTER ───
+  function updateCounter() {
+    document.getElementById('counter-num').textContent = translationsLeft;
+    for (let i = 0; i < 3; i++) {
+      const dot = document.getElementById('dot-' + i);
+      dot.classList.toggle('used', i >= translationsLeft);
+    }
+    sessionStorage.setItem('translationsLeft', translationsLeft);
+  }
+
+  function blockTranslation() {
+    const btn = document.getElementById('btn-translation');
+    btn.disabled = true;
+    btn.textContent = '🔒 Translation (used up)';
+    document.getElementById('translation-warning').classList.add('show');
+  }
+
+  // ─── SEARCH ───
+  async function doSearch(mode) {
+    const word = searchInput.value.trim();
+    if (!word) {
+      searchInput.classList.add('shake');
+      searchInput.focus();
+      setTimeout(() => searchInput.classList.remove('shake'), 400);
+      return;
+    }
+
+    if (mode === 'translation') {
+      if (translationsLeft <= 0) {
+        document.getElementById('modal-overlay').classList.add('show');
+        return;
+      }
+      translationsLeft--;
+      updateCounter();
+      if (translationsLeft === 0) blockTranslation();
+    }
+
+    currentMode = mode;
+    showPage('result-page');
+    renderLoading();
+
+    try {
+      if (mode === 'definition') {
+        await fetchDefinition(word);
+      } else {
+        await fetchTranslation(word);
+      }
+    } catch (err) {
+      renderError(word);
+    }
+  }
+
+  // ─── LOADING ───
+  function renderLoading() {
+    document.getElementById('result-content').innerHTML = `
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p style="color:var(--muted); font-weight:600;">Looking up the word...</p>
+      </div>`;
+  }
+
+  // ─── DEFINITION API ───
+  async function fetchDefinition(word) {
+    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+    renderDefinition(word, data);
+  }
+
+  function renderDefinition(word, data) {
+    const entry = data[0];
+    const phonetic = entry.phonetics?.find(p => p.text)?.text || '';
+    audioUrl = entry.phonetics?.find(p => p.audio)?.audio || null;
+
+    let html = `
+      <div class="result-word">${escHtml(entry.word || word)}</div>
+      <div class="result-phonetic">
+        ${phonetic ? `<span>${escHtml(phonetic)}</span>` : ''}
+        ${audioUrl ? `<button class="play-audio" onclick="playAudio()" title="Hear pronunciation">▶</button>` : ''}
+      </div>`;
+
+    for (const meaning of entry.meanings) {
+      html += `<div class="part-of-speech">${escHtml(meaning.partOfSpeech)}</div>`;
+
+      const defs = meaning.definitions.slice(0, 3);
+      for (const def of defs) {
+        html += `
+          <div class="definition-card">
+            <div class="definition-text">${makeClickable(def.definition)}</div>
+            ${def.example ? `<div class="example-text">${makeClickable(def.example)}</div>` : ''}
+          </div>`;
+      }
+
+      const synonyms = (meaning.synonyms || []).slice(0, 3);
+      const antonyms = (meaning.antonyms || []).slice(0, 2);
+
+      if (synonyms.length > 0) {
+        html += `<p class="section-label">Synonyms</p><div class="word-chips">`;
+        for (const s of synonyms) html += `<button class="chip chip-syn" onclick="searchChip('${escAttr(s)}')">${escHtml(s)}</button>`;
+        html += `</div>`;
+      }
+
+      if (antonyms.length > 0) {
+        html += `<p class="section-label">Antonyms</p><div class="word-chips">`;
+        for (const a of antonyms) html += `<button class="chip chip-ant" onclick="searchChip('${escAttr(a)}')">${escHtml(a)}</button>`;
+        html += `</div>`;
+      }
+    }
+
+    html += `<div style="margin-top:2rem;padding-bottom:2rem;">
+      <button onclick="goHome()" style="background:var(--secondary);color:#065F46;border:none;border-radius:50px;padding:10px 24px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;">
+        🔍 Search another word
+      </button>
+    </div>`;
+
+    document.getElementById('result-content').innerHTML = html;
+  }
+
+  // ─── TRANSLATION API ───
+  async function fetchTranslation(word) {
+    const [defRes, transRes] = await Promise.allSettled([
+      fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`),
+      fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|es`)
+    ]);
+
+    let defData = null;
+    if (defRes.status === 'fulfilled' && defRes.value.ok) {
+      defData = await defRes.value.json();
+    }
+
+    let translation = null;
+    if (transRes.status === 'fulfilled' && transRes.value.ok) {
+      const t = await transRes.value.json();
+      if (t.responseStatus === 200) translation = t.responseData.translatedText;
+    }
+
+    if (!translation && !defData) throw new Error('not found');
+
+    renderTranslation(word, translation, defData);
+  }
+
+  function renderTranslation(word, translation, defData) {
+    let html = `
+      <div class="result-word">${escHtml(word)}</div>`;
+
+    if (translation) {
+      html += `
+        <div class="translation-box">
+          <p style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">Spanish translation</p>
+          <div class="translation-es">${escHtml(translation)}</div>
+        </div>`;
+    }
+
+    if (defData) {
+      const entry = defData[0];
+      for (const meaning of entry.meanings) {
+        html += `<div class="part-of-speech">${escHtml(meaning.partOfSpeech)}</div>`;
+        const defs = meaning.definitions.slice(0, 2);
+        for (const def of defs) {
+          html += `
+            <div class="definition-card">
+              <div class="definition-text">${makeClickable(def.definition)}</div>
+            </div>`;
+        }
+
+        const synonyms = (meaning.synonyms || []).slice(0, 2);
+        const antonyms = (meaning.antonyms || []).slice(0, 2);
+
+        if (synonyms.length) {
+          html += `<p class="section-label">Synonyms</p><div class="word-chips">`;
+          for (const s of synonyms) html += `<button class="chip chip-syn" onclick="searchChip('${escAttr(s)}')">${escHtml(s)}</button>`;
+          html += `</div>`;
+        }
+
+        if (antonyms.length) {
+          html += `<p class="section-label">Antonyms</p><div class="word-chips">`;
+          for (const a of antonyms) html += `<button class="chip chip-ant" onclick="searchChip('${escAttr(a)}')">${escHtml(a)}</button>`;
+          html += `</div>`;
+        }
+      }
+    }
+
+    html += `
+      <div style="margin-top:1.5rem;padding:1rem;background:rgba(255,107,107,0.07);border-radius:var(--radius-sm);font-size:0.85rem;color:var(--muted);">
+        ⚠️ Translations remaining this session: <strong style="color:var(--primary)">${translationsLeft}</strong>
+      </div>
+      <div style="margin-top:1.5rem;padding-bottom:2rem;">
+        <button onclick="goHome()" style="background:var(--purple);color:white;border:none;border-radius:50px;padding:10px 24px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;">
+          🔍 Search another word
+        </button>
+      </div>`;
+
+    document.getElementById('result-content').innerHTML = html;
+  }
+
+  // ─── CHIP / WORD CLICK (goes through home, counts translation if that was mode) ───
+  function searchChip(word) {
+    searchInput.value = word;
+    clearBtn.style.display = 'flex';
+    goHome();
+  }
+
+  // ─── CLICKABLE WORDS IN DEFINITIONS ───
+  function makeClickable(text) {
+    return text.replace(/([a-zA-Z'-]{3,})/g, (match) => {
+      const clean = match.replace(/^'+|'+$/g, '');
+      if (clean.length < 3) return match;
+      return `<span class="clickable-word" onclick="clickWord('${escAttr(clean)}')">${escHtml(match)}</span>`;
+    });
+  }
+
+  function clickWord(word) {
+    searchInput.value = word;
+    clearBtn.style.display = 'flex';
+    goHome();
+  }
+
+  // ─── AUDIO ───
+  function playAudio() {
+    if (audioUrl) {
+      const a = new Audio(audioUrl);
+      a.play().catch(() => {});
+    }
+  }
+
+  // ─── ERROR ───
+  function renderError(word) {
+    document.getElementById('result-content').innerHTML = `
+      <div class="error-state">
+        <div class="error-emoji">🤔</div>
+        <div class="error-title">Word not found</div>
+        <p class="error-sub">We couldn't find "<strong>${escHtml(word)}</strong>" in the dictionary.<br>Check the spelling and try again!</p>
+        <button onclick="goHome()" style="margin-top:1.5rem;background:var(--primary);color:white;border:none;border-radius:50px;padding:10px 28px;font-family:'Nunito',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;">
+          Try again
+        </button>
+      </div>`;
+  }
+
+  // ─── MODAL ───
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('show');
+  }
+
+  // ─── UTILS ───
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function escAttr(s) {
+    return String(s).replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+  }
+
+  // Focus on load
+  setTimeout(() => searchInput.focus(), 100);
+</script>
+</body>
+</html>
