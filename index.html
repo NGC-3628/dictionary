@@ -33,6 +33,22 @@
       radial-gradient(circle at 50% 50%, rgba(168,85,247,0.04) 0%, transparent 60%);
     min-height: 100vh;
     color: var(--text);
+
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+
+    .page.active {
+    flex: 1;
+    }
+
+    .footer-design {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
   }
 
   /* ─── HEADER ─── */
@@ -873,10 +889,16 @@
   // Focus on load
   setTimeout(() => searchInput.focus(), 100);
 </script>
-<!-- ─── FOOTER (empty for now) ─── -->
+<!-- ─── FOOTER ─── -->
 <footer>
-
+  <div class="footer-design">
+    &copy; <span id ="year"></span> 
+    | WordQuest. All rights reserved. | Isaac Iturralde | <a href ="https://www.linkedin.com/in/isaac-iturralde/" target="black">linkedin profile</a>
+  </div>
 </footer>
+
+<!-- ─── EXTERNAL SCRIPT ─── -->
+  <script src="year.js"></script>
 
 </body>
 </html>
